@@ -418,13 +418,9 @@
         <div class="ratio-seg-reg" id="regBar" style="width: 50%"></div>
         <div class="ratio-seg-iqos" id="iqosBar" style="width: 50%"></div>
       </div>
-      <div class="ratio-labels">
+      <div class="ratio-labels" style="margin-bottom: 0;">
         <span id="regPct">عادية: 0%</span>
         <span id="iqosPct">آيكوس: 0%</span>
-      </div>
-      <div class="limit-row">
-        <span id="goalStatusText">الهدف اليومي الأقصى (مجموع النوعين):</span>
-        <input type="number" min="1" max="100" class="limit-input" id="dailyLimitInput" value="15" onchange="updateLimit(this.value)" />
       </div>
     </div>
 
@@ -471,13 +467,11 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed && typeof parsed === 'object') {
-            state.dailyLimit = parsed.dailyLimit || 15;
             state.updatedAt = parsed.updatedAt || 0;
             state.days = parsed.days || {};
           }
         }
       } catch (e) {}
-      document.getElementById('dailyLimitInput').value = state.dailyLimit;
     }
 
     function saveLocal() {
@@ -510,9 +504,7 @@
         }
         if (latestRemote && (latestRemote.updatedAt || 0) > (state.updatedAt || 0)) {
           state.days = latestRemote.days || {};
-          state.dailyLimit = latestRemote.dailyLimit || 15;
           state.updatedAt = latestRemote.updatedAt || Date.now();
-          document.getElementById('dailyLimitInput').value = state.dailyLimit;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           render();
         }
@@ -648,17 +640,9 @@
         lastIqos ? `آخر آيكوس: ${formatElapsed(lastIqos)} (${formatTimeShort(lastIqos)})` : 'لم يُسجل في هذا اليوم';
 
       const totalPill = document.getElementById('totalPill');
-      totalPill.textContent = `الإجمالي: ${total} / ${state.dailyLimit}`;
-      if (total > state.dailyLimit) {
-        totalPill.style.background = 'rgba(239, 68, 68, 0.25)';
-        totalPill.style.color = '#fca5a5';
-      } else if (total >= state.dailyLimit * 0.8) {
-        totalPill.style.background = 'rgba(245, 158, 11, 0.25)';
-        totalPill.style.color = '#fcd34d';
-      } else {
-        totalPill.style.background = 'var(--surface-2)';
-        totalPill.style.color = 'var(--text)';
-      }
+      totalPill.textContent = `الإجمالي: ${total}`;
+      totalPill.style.background = 'var(--surface-2)';
+      totalPill.style.color = 'var(--text)';
 
       const regPct = total > 0 ? Math.round((regCount / total) * 100) : 0;
       const iqosPct = total > 0 ? (100 - regPct) : 0;
@@ -688,7 +672,7 @@
         const q = items.filter(x => x.type === 'iqos').length;
         daysArr.push({ key, label: `${m}/${day}`, r, q, total: r + q });
       }
-      const maxVal = Math.max(state.dailyLimit, ...daysArr.map(d => d.total), 5);
+      const maxVal = Math.max(...daysArr.map(d => d.total), 5);
       daysArr.forEach(d => {
         const col = document.createElement('div');
         col.className = 'chart-col' + (d.key === selectedDate ? ' selected' : '');
