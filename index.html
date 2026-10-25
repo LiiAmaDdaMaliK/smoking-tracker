@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="متتبع التدخين" />
+  <meta name="theme-color" content="#0b0f19" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>متتبع التدخين اليومي - أبو حميد</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: #131b2e;
+      --surface-2: #1c2742;
+      --border: #283556;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.16);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.16);
+      --green: #10b981;
+      --danger: #ef4444;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      padding: env(safe-area-inset-top, 16px) 16px calc(env(safe-area-inset-bottom, 20px) + 20px);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Arabic", "Segoe UI", Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      user-select: none;
+    }
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 16px;
+    }
+    .title-wrap h1 {
+      font-size: 1.35rem;
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .title-wrap p {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .sync-badge {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+    .sync-dot.offline {
+      background: var(--amber);
+    }
+
+    /* Date Selector Bar */
+    .date-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+    }
+    .date-bar button {
+      background: var(--surface-2);
+      border: none;
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .date-bar span {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    /* Counter Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .counter-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .counter-card.regular {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: linear-gradient(160deg, var(--amber-glow) 0%, var(--surface) 65%);
+    }
+    .counter-card.iqos {
+      border-color: rgba(6, 182, 212, 0.4);
+      background: linear-gradient(160deg, var(--cyan-glow) 0%, var(--surface) 65%);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .regular .card-title { color: var(--amber); }
+    .iqos .card-title { color: var(--cyan); }
+    .card-icon {
+      font-size: 1.25rem;
+    }
+    .count-display {
+      font-size: 3.1rem;
+      font-weight: 900;
+      text-align: center;
+      margin: 8px 0;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .elapsed-text {
+      font-size: 0.76rem;
+      color: var(--muted);
+      text-align: center;
+      min-height: 2.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 8px;
+    }
+    .btn-action {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+    }
+    .btn-action:active {
+      transform: scale(0.95);
+    }
+    .btn-minus {
+      background: var(--surface-2);
+      color: var(--muted);
+    }
+    .regular .btn-plus {
+      background: var(--amber);
+      color: #0b0f19;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    }
+    .iqos .btn-plus {
+      background: var(--cyan);
+      color: #0b0f19;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+    }
+
+    /* Summary & Ratio Card */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .total-pill {
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--surface-2);
+    }
+    .ratio-bar {
+      height: 12px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      overflow: hidden;
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .ratio-seg-reg {
+      background: var(--amber);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    .ratio-seg-iqos {
+      background: var(--cyan);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    .ratio-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .limit-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .limit-input {
+      width: 64px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 8px;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    /* 7-Day Chart */
+    .chart-bars {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      height: 130px;
+      align-items: end;
+      padding-top: 16px;
+    }
+    .chart-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      cursor: pointer;
+    }
+    .chart-col.selected .day-label {
+      color: var(--text);
+      font-weight: 800;
+      text-decoration: underline;
+    }
+    .bar-stack {
+      width: 100%;
+      max-width: 28px;
+      background: var(--surface-2);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column-reverse;
+      min-height: 4px;
+    }
+    .bar-reg { background: var(--amber); width: 100%; }
+    .bar-iqos { background: var(--cyan); width: 100%; }
+    .bar-num {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .day-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* Timeline List */
+    .timeline-list {
+      max-height: 240px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .timeline-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .tl-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tl-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .tl-dot.regular { background: var(--amber); }
+    .tl-dot.iqos { background: var(--cyan); }
+    .tl-del {
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .empty-msg {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-wrap">
+        <h1>متتبع التدخين اليومي</h1>
+        <p>السجائر العادية وسجائر الآيكوس (IQOS)</p>
+      </div>
+      <div class="sync-badge" id="syncBadge" onclick="pullFromCloud()" style="cursor:pointer" title="اضغط للمزامنة الفورية">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncText">مزامنة سحابية...</span>
+      </div>
+    </header>
+
+    <div class="date-bar">
+      <button onclick="shiftDate(-1)">▶ اليوم السابق</button>
+      <span id="currentDateLabel">اليوم</span>
+      <button onclick="shiftDate(1)" id="nextDayBtn">اليوم التالي ◀</button>
+    </div>
+
+    <div class="cards-grid">
+      <!-- Regular Cigarettes Card -->
+      <div class="counter-card regular">
+        <div class="card-header">
+          <span class="card-title">سجائر عادية</span>
+          <span class="card-icon">🚬</span>
+        </div>
+        <div class="count-display" id="regCount">0</div>
+        <div class="elapsed-text" id="regElapsed">لم يُسجل اليوم</div>
+        <div class="btn-row">
+          <button class="btn-action btn-minus" onclick="removeLast('regular')">-1</button>
+          <button class="btn-action btn-plus" onclick="addEntry('regular')">+1</button>
+        </div>
+      </div>
+
+      <!-- IQOS Card -->
+      <div class="counter-card iqos">
+        <div class="card-header">
+          <span class="card-title">سجائر آيكوس</span>
+          <span class="card-icon">⚡</span>
+        </div>
+        <div class="count-display" id="iqosCount">0</div>
+        <div class="elapsed-text" id="iqosElapsed">لم يُسجل اليوم</div>
+        <div class="btn-row">
+          <button class="btn-action btn-minus" onclick="removeLast('iqos')">-1</button>
+          <button class="btn-action btn-plus" onclick="addEntry('iqos')">+1</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary & Ratio Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">ملخص ونسب الاستهلاك</h2>
+        <span class="total-pill" id="totalPill">الإجمالي: 0</span>
+      </div>
+      <div class="ratio-bar">
+        <div class="ratio-seg-reg" id="regBar" style="width: 50%"></div>
+        <div class="ratio-seg-iqos" id="iqosBar" style="width: 50%"></div>
+      </div>
+      <div class="ratio-labels">
+        <span id="regPct">عادية: 0%</span>
+        <span id="iqosPct">آيكوس: 0%</span>
+      </div>
+      <div class="limit-row">
+        <span id="goalStatusText">الهدف اليومي الأقصى (مجموع النوعين):</span>
+        <input type="number" min="1" max="100" class="limit-input" id="dailyLimitInput" value="15" onchange="updateLimit(this.value)" />
+      </div>
+    </div>
+
+    <!-- 7 Days Chart -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">إحصائيات آخر 7 أيام (اضغط على أي يوم لعرضه)</h2>
+      </div>
+      <div class="chart-bars" id="chartBars"></div>
+    </div>
+
+    <!-- Daily Timeline -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">سجل اليوم التفصيلي</h2>
+      </div>
+      <div class="timeline-list" id="timelineList"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'abu_hameed_smoking_tracker_v1';
+    const CLOUD_TOPIC = 'abuhameed_smoke_976f3de2b4bac';
+    const CLOUD_URL = `https://ntfy.sh/${CLOUD_TOPIC}`;
+    let state = {
+      dailyLimit: 15,
+      updatedAt: 0,
+      days: {} // { 'YYYY-MM-DD': [ { id, type: 'regular'|'iqos', ts: ISOString } ] }
+    };
+
+    function getTodayStr() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    let selectedDate = getTodayStr();
+
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            state.dailyLimit = parsed.dailyLimit || 15;
+            state.updatedAt = parsed.updatedAt || 0;
+            state.days = parsed.days || {};
+          }
+        }
+      } catch (e) {}
+      document.getElementById('dailyLimitInput').value = state.dailyLimit;
+    }
+
+    function saveLocal() {
+      state.updatedAt = Date.now();
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+      syncWithCloud();
+    }
+
+    async function pullFromCloud() {
+      try {
+        const res = await fetch(`${CLOUD_URL}/json?poll=1&since=48h`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('offline');
+        const text = await res.text();
+        const lines = text.trim().split('\n').filter(Boolean);
+        let latestRemote = null;
+        for (const line of lines) {
+          try {
+            const ev = JSON.parse(line);
+            if (ev.event === 'message' && ev.message) {
+              const payload = JSON.parse(ev.message);
+              if (payload && payload.days) {
+                if (!latestRemote || (payload.updatedAt || 0) >= (latestRemote.updatedAt || 0)) {
+                  latestRemote = payload;
+                }
+              }
+            }
+          } catch (err) {}
+        }
+        if (latestRemote && (latestRemote.updatedAt || 0) > (state.updatedAt || 0)) {
+          state.days = latestRemote.days || {};
+          state.dailyLimit = latestRemote.dailyLimit || 15;
+          state.updatedAt = latestRemote.updatedAt || Date.now();
+          document.getElementById('dailyLimitInput').value = state.dailyLimit;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          render();
+        }
+        setSyncStatus(true);
+      } catch (e) {
+        setSyncStatus(false);
+      }
+    }
+
+    async function syncWithCloud() {
+      let ok = false;
+      try {
+        const res = await fetch(CLOUD_URL, {
+          method: 'POST',
+          body: JSON.stringify(state)
+        });
+        if (res.ok) ok = true;
+      } catch (e) {}
+      try {
+        const res2 = await fetch('/smoking-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state)
+        });
+        if (res2.ok) ok = true;
+      } catch (e) {}
+      setSyncStatus(ok);
+    }
+
+    function setSyncStatus(online) {
+      const dot = document.getElementById('syncDot');
+      const txt = document.getElementById('syncText');
+      if (online) {
+        dot.className = 'sync-dot';
+        txt.textContent = 'متزامن سحابياً مع المحادثة';
+      } else {
+        dot.className = 'sync-dot offline';
+        txt.textContent = 'محفوظ بالآيفون';
+      }
+    }
+
+    function addEntry(type) {
+      if (!state.days[selectedDate]) state.days[selectedDate] = [];
+      state.days[selectedDate].push({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        type,
+        ts: new Date().toISOString()
+      });
+      saveLocal();
+      render();
+    }
+
+    function removeLast(type) {
+      const list = state.days[selectedDate] || [];
+      for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i].type === type) {
+          list.splice(i, 1);
+          saveLocal();
+          render();
+          return;
+        }
+      }
+    }
+
+    function deleteById(id) {
+      const list = state.days[selectedDate] || [];
+      state.days[selectedDate] = list.filter(x => x.id !== id);
+      saveLocal();
+      render();
+    }
+
+    function updateLimit(val) {
+      const num = parseInt(val, 10);
+      if (num > 0) {
+        state.dailyLimit = num;
+        saveLocal();
+        render();
+      }
+    }
+
+    function shiftDate(delta) {
+      const parts = selectedDate.split('-').map(Number);
+      const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+      dt.setDate(dt.getDate() + delta);
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth() + 1).padStart(2, '0');
+      const d = String(dt.getDate()).padStart(2, '0');
+      const nextStr = `${y}-${m}-${d}`;
+      if (nextStr > getTodayStr()) return;
+      selectedDate = nextStr;
+      render();
+    }
+
+    function formatElapsed(isoStr) {
+      if (!isoStr) return 'لم يُسجل اليوم';
+      const diffSec = Math.max(0, Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000));
+      if (diffSec < 60) return 'منذ لحظات';
+      const mins = Math.floor(diffSec / 60);
+      if (mins < 60) return `منذ ${mins} دقيقة`;
+      const hrs = Math.floor(mins / 60);
+      const remMins = mins % 60;
+      return remMins > 0 ? `منذ ${hrs} س و ${remMins} د` : `منذ ${hrs} ساعة`;
+    }
+
+    function formatTimeShort(isoStr) {
+      const d = new Date(isoStr);
+      return d.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function render() {
+      const today = getTodayStr();
+      document.getElementById('currentDateLabel').textContent =
+        selectedDate === today ? `اليوم (${selectedDate})` : selectedDate;
+      document.getElementById('nextDayBtn').disabled = (selectedDate >= today);
+      document.getElementById('nextDayBtn').style.opacity = (selectedDate >= today) ? '0.4' : '1';
+
+      const list = state.days[selectedDate] || [];
+      const regList = list.filter(x => x.type === 'regular');
+      const iqosList = list.filter(x => x.type === 'iqos');
+      const regCount = regList.length;
+      const iqosCount = iqosList.length;
+      const total = regCount + iqosCount;
+
+      document.getElementById('regCount').textContent = regCount;
+      document.getElementById('iqosCount').textContent = iqosCount;
+
+      const lastReg = regList.length ? regList[regList.length - 1].ts : null;
+      const lastIqos = iqosList.length ? iqosList[iqosList.length - 1].ts : null;
+
+      document.getElementById('regElapsed').textContent =
+        lastReg ? `آخر سيجارة: ${formatElapsed(lastReg)} (${formatTimeShort(lastReg)})` : 'لم يُسجل في هذا اليوم';
+      document.getElementById('iqosElapsed').textContent =
+        lastIqos ? `آخر آيكوس: ${formatElapsed(lastIqos)} (${formatTimeShort(lastIqos)})` : 'لم يُسجل في هذا اليوم';
+
+      const totalPill = document.getElementById('totalPill');
+      totalPill.textContent = `الإجمالي: ${total} / ${state.dailyLimit}`;
+      if (total > state.dailyLimit) {
+        totalPill.style.background = 'rgba(239, 68, 68, 0.25)';
+        totalPill.style.color = '#fca5a5';
+      } else if (total >= state.dailyLimit * 0.8) {
+        totalPill.style.background = 'rgba(245, 158, 11, 0.25)';
+        totalPill.style.color = '#fcd34d';
+      } else {
+        totalPill.style.background = 'var(--surface-2)';
+        totalPill.style.color = 'var(--text)';
+      }
+
+      const regPct = total > 0 ? Math.round((regCount / total) * 100) : 0;
+      const iqosPct = total > 0 ? (100 - regPct) : 0;
+      document.getElementById('regBar').style.width = total > 0 ? `${regPct}%` : '50%';
+      document.getElementById('iqosBar').style.width = total > 0 ? `${iqosPct}%` : '50%';
+      document.getElementById('regPct').textContent = `عادية: ${regPct}% (${regCount})`;
+      document.getElementById('iqosPct').textContent = `آيكوس: ${iqosPct}% (${iqosCount})`;
+
+      renderChart();
+      renderTimeline(list);
+    }
+
+    function renderChart() {
+      const container = document.getElementById('chartBars');
+      container.innerHTML = '';
+      const daysArr = [];
+      const base = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(base);
+        d.setDate(base.getDate() - i);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const key = `${y}-${m}-${day}`;
+        const items = state.days[key] || [];
+        const r = items.filter(x => x.type === 'regular').length;
+        const q = items.filter(x => x.type === 'iqos').length;
+        daysArr.push({ key, label: `${m}/${day}`, r, q, total: r + q });
+      }
+      const maxVal = Math.max(state.dailyLimit, ...daysArr.map(d => d.total), 5);
+      daysArr.forEach(d => {
+        const col = document.createElement('div');
+        col.className = 'chart-col' + (d.key === selectedDate ? ' selected' : '');
+        col.onclick = () => { selectedDate = d.key; render(); };
+
+        const num = document.createElement('div');
+        num.className = 'bar-num';
+        num.textContent = d.total;
+
+        const stack = document.createElement('div');
+        stack.className = 'bar-stack';
+        const heightPct = Math.max(6, Math.round((d.total / maxVal) * 85));
+        stack.style.height = `${heightPct}px`;
+
+        const regBar = document.createElement('div');
+        regBar.className = 'bar-reg';
+        regBar.style.height = d.total > 0 ? `${(d.r / d.total) * 100}%` : '0%';
+
+        const iqosBar = document.createElement('div');
+        iqosBar.className = 'bar-iqos';
+        iqosBar.style.height = d.total > 0 ? `${(d.q / d.total) * 100}%` : '0%';
+
+        stack.appendChild(regBar);
+        stack.appendChild(iqosBar);
+
+        const lbl = document.createElement('div');
+        lbl.className = 'day-label';
+        lbl.textContent = d.label;
+
+        col.appendChild(num);
+        col.appendChild(stack);
+        col.appendChild(lbl);
+        container.appendChild(col);
+      });
+    }
+
+    function renderTimeline(list) {
+      const container = document.getElementById('timelineList');
+      if (!list.length) {
+        container.innerHTML = '<div class="empty-msg">لا توجد سجلات في هذا اليوم بعد</div>';
+        return;
+      }
+      container.innerHTML = '';
+      [...list].reverse().forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'timeline-item';
+        const isReg = item.type === 'regular';
+        row.innerHTML = `
+          <div class="tl-right">
+            <span class="tl-dot ${item.type}"></span>
+            <strong>${isReg ? 'سيجارة عادية' : 'سيجارة آيكوس (IQOS)'}</strong>
+            <span style="color:var(--muted)">— ${formatTimeShort(item.ts)}</span>
+          </div>
+          <button class="tl-del" onclick="deleteById('${item.id}')">حذف ✕</button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    loadLocal();
+    render();
+    pullFromCloud();
+    setInterval(render, 30000);
+    setInterval(pullFromCloud, 15000);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
