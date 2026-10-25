@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smoking-tracker-v2';
+const CACHE_NAME = 'smoking-tracker-v3';
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(['./', './index.html', './manifest.json'])));
   self.skipWaiting();
