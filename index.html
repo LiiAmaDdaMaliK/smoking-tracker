@@ -443,13 +443,73 @@
 
   <script>
     const STORAGE_KEY = 'abu_hameed_smoking_tracker_v1';
-    const CLOUD_TOPIC = 'abuhameed_smoke_976f3de2b4bac';
+    const CLOUD_TOPIC = 'abuhameed_smoke_sync_v2_976f';
+    const LEGACY_TOPIC = 'abuhameed_smoke_976f3de2b4bac';
     const CLOUD_URL = `https://ntfy.sh/${CLOUD_TOPIC}`;
+    const LOCAL_API = 'http://127.0.0.1:8765/smoking-sync';
+
+    const SEED_DAYS = {
+      "2026-10-25": [
+        { "id": "mvo1hm11g9ql", "type": "regular", "ts": "2026-10-25T16:25:52.069Z" },
+        { "id": "mvo2od044z6z", "type": "regular", "ts": "2026-10-25T16:59:06.580Z" },
+        { "id": "mvo2z5j2x969", "type": "regular", "ts": "2026-10-25T17:07:30.110Z" },
+        { "id": "mvo3ugd9rm5r", "type": "regular", "ts": "2026-10-25T17:31:50.493Z" },
+        { "id": "mvo45uyicoqg", "type": "regular", "ts": "2026-10-25T17:40:42.618Z" },
+        { "id": "mvo4jqqp4nbb", "type": "regular", "ts": "2026-10-25T17:51:30.337Z" },
+        { "id": "mvo4u14ymsx9", "type": "regular", "ts": "2026-10-25T17:59:30.370Z" },
+        { "id": "mvo5wi7vijri", "type": "regular", "ts": "2026-10-25T18:29:25.435Z" }
+      ],
+      "2026-10-26": [
+        { "id": "mvp0h0dp3m89", "type": "regular", "ts": "2026-10-26T08:45:10.573Z" },
+        { "id": "mvp7o85u0843", "type": "regular", "ts": "2026-10-26T12:06:44.562Z" },
+        { "id": "mvp87zy2hzw2", "type": "regular", "ts": "2026-10-26T12:22:07.034Z" },
+        { "id": "mvp8jd5ivw65", "type": "regular", "ts": "2026-10-26T12:30:57.366Z" },
+        { "id": "mvp8xyljq8hl", "type": "regular", "ts": "2026-10-26T12:42:18.343Z" },
+        { "id": "mvp92t8nqstr", "type": "iqos", "ts": "2026-10-26T12:46:04.679Z" },
+        { "id": "mvp9nuhqyirf", "type": "regular", "ts": "2026-10-26T13:02:26.078Z" },
+        { "id": "mvp9ssm7onxz", "type": "iqos", "ts": "2026-10-26T13:06:16.927Z" },
+        { "id": "mvpbhjdryboq", "type": "regular", "ts": "2026-10-26T13:53:30.975Z" },
+        { "id": "mvpcmpof9lfj", "type": "regular", "ts": "2026-10-26T14:25:32.031Z" },
+        { "id": "mvpdep8s2ez3", "type": "iqos", "ts": "2026-10-26T14:47:17.836Z" },
+        { "id": "mvpdj6km7uif", "type": "regular", "ts": "2026-10-26T14:50:46.918Z" }
+      ]
+    };
+
     let state = {
-      dailyLimit: 15,
       updatedAt: 0,
+      deletedIds: [],
       days: {} // { 'YYYY-MM-DD': [ { id, type: 'regular'|'iqos', ts: ISOString } ] }
     };
+
+    function mergeState(incoming) {
+      if (!incoming || typeof incoming !== 'object') return false;
+      const beforeJson = JSON.stringify({ d: state.days, del: state.deletedIds });
+      const delSet = new Set([...(state.deletedIds || []), ...(incoming.deletedIds || [])]);
+      state.deletedIds = Array.from(delSet);
+
+      const inDays = incoming.days || {};
+      const allDayKeys = new Set([...Object.keys(state.days || {}), ...Object.keys(inDays)]);
+      for (const dKey of allDayKeys) {
+        const map = new Map();
+        for (const item of (state.days[dKey] || [])) {
+          if (item && item.id && !delSet.has(item.id)) map.set(item.id, item);
+        }
+        for (const item of (inDays[dKey] || [])) {
+          if (item && item.id && !delSet.has(item.id)) map.set(item.id, item);
+        }
+        const mergedList = Array.from(map.values()).sort((a, b) => new Date(a.ts) - new Date(b.ts));
+        if (mergedList.length > 0) {
+          state.days[dKey] = mergedList;
+        } else {
+          delete state.days[dKey];
+        }
+      }
+      if ((incoming.updatedAt || 0) > (state.updatedAt || 0)) {
+        state.updatedAt = incoming.updatedAt;
+      }
+      const afterJson = JSON.stringify({ d: state.days, del: state.deletedIds });
+      return beforeJson !== afterJson;
+    }
 
     function getTodayStr() {
       const now = new Date();
@@ -462,15 +522,16 @@
     let selectedDate = getTodayStr();
 
     function loadLocal() {
+      mergeState({ days: SEED_DAYS, deletedIds: [] });
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed === 'object') {
-            state.updatedAt = parsed.updatedAt || 0;
-            state.days = parsed.days || {};
-          }
+          mergeState(parsed);
         }
+      } catch (e) {}
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (e) {}
     }
 
@@ -483,35 +544,58 @@
     }
 
     async function pullFromCloud() {
-      try {
-        const res = await fetch(`${CLOUD_URL}/json?poll=1&since=48h`, { cache: 'no-store' });
-        if (!res.ok) throw new Error('offline');
-        const text = await res.text();
-        const lines = text.trim().split('\n').filter(Boolean);
-        let latestRemote = null;
-        for (const line of lines) {
-          try {
-            const ev = JSON.parse(line);
-            if (ev.event === 'message' && ev.message) {
-              const payload = JSON.parse(ev.message);
-              if (payload && payload.days) {
-                if (!latestRemote || (payload.updatedAt || 0) >= (latestRemote.updatedAt || 0)) {
-                  latestRemote = payload;
-                }
-              }
-            }
-          } catch (err) {}
-        }
-        if (latestRemote && (latestRemote.updatedAt || 0) > (state.updatedAt || 0)) {
-          state.days = latestRemote.days || {};
-          state.updatedAt = latestRemote.updatedAt || Date.now();
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-          render();
-        }
-        setSyncStatus(true);
-      } catch (e) {
-        setSyncStatus(false);
+      let anySuccess = false;
+      let changed = false;
+
+      // 1. Try local Mac server first (0ms when on Computer or same Wi-Fi)
+      for (const localUrl of ['/smoking-sync', LOCAL_API]) {
+        try {
+          const rLocal = await fetch(localUrl, { cache: 'no-store' });
+          if (rLocal.ok) {
+            const dLocal = await rLocal.json();
+            if (mergeState(dLocal)) changed = true;
+            anySuccess = true;
+            break;
+          }
+        } catch (e) {}
       }
+
+      // 2. Pull from Cloud topic
+      for (const topic of [CLOUD_TOPIC, LEGACY_TOPIC]) {
+        try {
+          const res = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=48h`, { cache: 'no-store' });
+          if (res.ok) {
+            anySuccess = true;
+            const text = await res.text();
+            const lines = text.trim().split('\n').filter(Boolean);
+            for (const line of lines) {
+              try {
+                const ev = JSON.parse(line);
+                if (ev.event === 'message' && ev.message) {
+                  const payload = JSON.parse(ev.message);
+                  if (mergeState(payload)) changed = true;
+                }
+              } catch (err) {}
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (changed) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {}
+        render();
+        // Propagate merged state to local Mac server if reachable
+        try {
+          fetch(LOCAL_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state)
+          }).catch(() => {});
+        } catch (e) {}
+      }
+      setSyncStatus(anySuccess);
     }
 
     async function syncWithCloud() {
@@ -523,15 +607,42 @@
         });
         if (res.ok) ok = true;
       } catch (e) {}
-      try {
-        const res2 = await fetch('/smoking-sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(state)
-        });
-        if (res2.ok) ok = true;
-      } catch (e) {}
+      for (const localUrl of ['/smoking-sync', LOCAL_API]) {
+        try {
+          const res2 = await fetch(localUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state)
+          });
+          if (res2.ok) {
+            const mergedBack = await res2.json();
+            if (mergedBack && mergedBack.days && mergeState(mergedBack)) {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+              render();
+            }
+            ok = true;
+            break;
+          }
+        } catch (e) {}
+      }
       setSyncStatus(ok);
+    }
+
+    function connectLiveStream() {
+      try {
+        const es = new EventSource(`${CLOUD_URL}/sse`);
+        es.onmessage = (ev) => {
+          try {
+            const data = JSON.parse(ev.data);
+            const payload = data.message ? JSON.parse(data.message) : data;
+            if (mergeState(payload)) {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+              render();
+            }
+            setSyncStatus(true);
+          } catch (e) {}
+        };
+      } catch (e) {}
     }
 
     function setSyncStatus(online) {
@@ -539,10 +650,10 @@
       const txt = document.getElementById('syncText');
       if (online) {
         dot.className = 'sync-dot';
-        txt.textContent = 'متزامن سحابياً مع المحادثة';
+        txt.textContent = 'متزامن لحظياً (الآيفون والماك)';
       } else {
         dot.className = 'sync-dot offline';
-        txt.textContent = 'محفوظ بالآيفون';
+        txt.textContent = 'محفوظ محلياً';
       }
     }
 
@@ -561,7 +672,11 @@
       const list = state.days[selectedDate] || [];
       for (let i = list.length - 1; i >= 0; i--) {
         if (list[i].type === type) {
-          list.splice(i, 1);
+          const removed = list.splice(i, 1)[0];
+          if (removed && removed.id) {
+            if (!state.deletedIds) state.deletedIds = [];
+            if (!state.deletedIds.includes(removed.id)) state.deletedIds.push(removed.id);
+          }
           saveLocal();
           render();
           return;
@@ -570,6 +685,8 @@
     }
 
     function deleteById(id) {
+      if (!state.deletedIds) state.deletedIds = [];
+      if (!state.deletedIds.includes(id)) state.deletedIds.push(id);
       const list = state.days[selectedDate] || [];
       state.days[selectedDate] = list.filter(x => x.id !== id);
       saveLocal();
@@ -735,10 +852,16 @@
     loadLocal();
     render();
     pullFromCloud();
+    connectLiveStream();
     setInterval(render, 30000);
-    setInterval(pullFromCloud, 15000);
+    setInterval(pullFromCloud, 45000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') pullFromCloud();
+    });
+    window.addEventListener('focus', pullFromCloud);
+    window.addEventListener('pageshow', pullFromCloud);
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      navigator.serviceWorker.register('./sw.js').then((reg) => reg.update()).catch(() => {});
     }
   </script>
 </body>
