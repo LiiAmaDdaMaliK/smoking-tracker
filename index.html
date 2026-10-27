@@ -445,43 +445,423 @@
     const STORAGE_KEY = 'abu_hameed_smoking_tracker_v1';
     const CLOUD_TOPIC = 'abuhameed_smoke_sync_v2_976f';
     const LEGACY_TOPIC = 'abuhameed_smoke_976f3de2b4bac';
-    const CLOUD_URL = `https://ntfy.sh/${CLOUD_TOPIC}`;
+    const CLOUD_URLS = [
+      `https://ntfy.envs.net/${CLOUD_TOPIC}`,
+      `https://ntfy.sh/${CLOUD_TOPIC}`
+    ];
     const LOCAL_API = 'http://127.0.0.1:8765/smoking-sync';
 
     const SEED_DAYS = {
       "2026-10-25": [
-        { "id": "mvo1hm11g9ql", "type": "regular", "ts": "2026-10-25T16:25:52.069Z" },
-        { "id": "mvo2od044z6z", "type": "regular", "ts": "2026-10-25T16:59:06.580Z" },
-        { "id": "mvo2z5j2x969", "type": "regular", "ts": "2026-10-25T17:07:30.110Z" },
-        { "id": "mvo3ugd9rm5r", "type": "regular", "ts": "2026-10-25T17:31:50.493Z" },
-        { "id": "mvo45uyicoqg", "type": "regular", "ts": "2026-10-25T17:40:42.618Z" },
-        { "id": "mvo4jqqp4nbb", "type": "regular", "ts": "2026-10-25T17:51:30.337Z" },
-        { "id": "mvo4u14ymsx9", "type": "regular", "ts": "2026-10-25T17:59:30.370Z" },
-        { "id": "mvo5wi7vijri", "type": "regular", "ts": "2026-10-25T18:29:25.435Z" }
+            {
+                  "id": "mvo1hm11g9ql",
+                  "type": "regular",
+                  "ts": "2026-10-25T16:25:52.069Z"
+            },
+            {
+                  "id": "mvo2od044z6z",
+                  "type": "regular",
+                  "ts": "2026-10-25T16:59:06.580Z"
+            },
+            {
+                  "id": "mvo2z5j2x969",
+                  "type": "regular",
+                  "ts": "2026-10-25T17:07:30.110Z"
+            },
+            {
+                  "id": "mvo3ugd9rm5r",
+                  "type": "regular",
+                  "ts": "2026-10-25T17:31:50.493Z"
+            },
+            {
+                  "id": "mvo45uyicoqg",
+                  "type": "regular",
+                  "ts": "2026-10-25T17:40:42.618Z"
+            },
+            {
+                  "id": "mvo4jqqp4nbb",
+                  "type": "regular",
+                  "ts": "2026-10-25T17:51:30.337Z"
+            },
+            {
+                  "id": "mvo4u14ymsx9",
+                  "type": "regular",
+                  "ts": "2026-10-25T17:59:30.370Z"
+            },
+            {
+                  "id": "mvo5wi7vijri",
+                  "type": "regular",
+                  "ts": "2026-10-25T18:29:25.435Z"
+            }
       ],
       "2026-10-26": [
-        { "id": "mvp0h0dp3m89", "type": "regular", "ts": "2026-10-26T08:45:10.573Z" },
-        { "id": "mvp7o85u0843", "type": "regular", "ts": "2026-10-26T12:06:44.562Z" },
-        { "id": "mvp87zy2hzw2", "type": "regular", "ts": "2026-10-26T12:22:07.034Z" },
-        { "id": "mvp8jd5ivw65", "type": "regular", "ts": "2026-10-26T12:30:57.366Z" },
-        { "id": "mvp8xyljq8hl", "type": "regular", "ts": "2026-10-26T12:42:18.343Z" },
-        { "id": "mvp92t8nqstr", "type": "iqos", "ts": "2026-10-26T12:46:04.679Z" },
-        { "id": "mvp9nuhqyirf", "type": "regular", "ts": "2026-10-26T13:02:26.078Z" },
-        { "id": "mvp9ssm7onxz", "type": "iqos", "ts": "2026-10-26T13:06:16.927Z" },
-        { "id": "mvpbhjdryboq", "type": "regular", "ts": "2026-10-26T13:53:30.975Z" },
-        { "id": "mvpcmpof9lfj", "type": "regular", "ts": "2026-10-26T14:25:32.031Z" },
-        { "id": "mvpdep8s2ez3", "type": "iqos", "ts": "2026-10-26T14:47:17.836Z" },
-        { "id": "mvpdj6km7uif", "type": "regular", "ts": "2026-10-26T14:50:46.918Z" }
+            {
+                  "id": "mvp0h0dp3m89",
+                  "type": "regular",
+                  "ts": "2026-10-26T08:45:10.573Z"
+            },
+            {
+                  "id": "mvp7o85u0843",
+                  "type": "regular",
+                  "ts": "2026-10-26T12:06:44.562Z"
+            },
+            {
+                  "id": "mvp87zy2hzw2",
+                  "type": "regular",
+                  "ts": "2026-10-26T12:22:07.034Z"
+            },
+            {
+                  "id": "mvp8jd5ivw65",
+                  "type": "regular",
+                  "ts": "2026-10-26T12:30:57.366Z"
+            },
+            {
+                  "id": "mvp8xyljq8hl",
+                  "type": "regular",
+                  "ts": "2026-10-26T12:42:18.343Z"
+            },
+            {
+                  "id": "mvp92t8nqstr",
+                  "type": "iqos",
+                  "ts": "2026-10-26T12:46:04.679Z"
+            },
+            {
+                  "id": "mvp9nuhqyirf",
+                  "type": "regular",
+                  "ts": "2026-10-26T13:02:26.078Z"
+            },
+            {
+                  "id": "mvp9ssm7onxz",
+                  "type": "iqos",
+                  "ts": "2026-10-26T13:06:16.927Z"
+            },
+            {
+                  "id": "mvpbhjdryboq",
+                  "type": "regular",
+                  "ts": "2026-10-26T13:53:30.975Z"
+            },
+            {
+                  "id": "mvpcmpof9lfj",
+                  "type": "regular",
+                  "ts": "2026-10-26T14:25:32.031Z"
+            },
+            {
+                  "id": "mvpdep8s2ez3",
+                  "type": "iqos",
+                  "ts": "2026-10-26T14:47:17.836Z"
+            },
+            {
+                  "id": "mvpdj6km7uif",
+                  "type": "regular",
+                  "ts": "2026-10-26T14:50:46.918Z"
+            },
+            {
+                  "id": "mvpe8s0fm5p5",
+                  "type": "regular",
+                  "ts": "2026-10-26T15:10:41.103Z"
+            },
+            {
+                  "id": "mvpeiydf5liu",
+                  "type": "regular",
+                  "ts": "2026-10-26T15:18:35.907Z"
+            },
+            {
+                  "id": "mvpf5n5sxwue",
+                  "type": "regular",
+                  "ts": "2026-10-26T15:36:14.464Z"
+            },
+            {
+                  "id": "mvpg2aq7ds6b",
+                  "type": "regular",
+                  "ts": "2026-10-26T16:01:37.999Z"
+            },
+            {
+                  "id": "mvph34lkk0fk",
+                  "type": "regular",
+                  "ts": "2026-10-26T16:30:16.328Z"
+            },
+            {
+                  "id": "mvph85wi6ioe",
+                  "type": "iqos",
+                  "ts": "2026-10-26T16:34:11.298Z"
+            },
+            {
+                  "id": "mvpia7uk7xlg",
+                  "type": "iqos",
+                  "ts": "2026-10-26T17:03:46.748Z"
+            },
+            {
+                  "id": "mvpivgfxyl4e",
+                  "type": "regular",
+                  "ts": "2026-10-26T17:20:17.661Z"
+            },
+            {
+                  "id": "mvpjndrzq3iu",
+                  "type": "regular",
+                  "ts": "2026-10-26T17:42:00.575Z"
+            },
+            {
+                  "id": "mvpjtkb4dmdi",
+                  "type": "regular",
+                  "ts": "2026-10-26T17:46:48.976Z"
+            },
+            {
+                  "id": "mvpkyfy8tw6g",
+                  "type": "regular",
+                  "ts": "2026-10-26T18:18:36.224Z"
+            },
+            {
+                  "id": "mvplxnxeye2h",
+                  "type": "iqos",
+                  "ts": "2026-10-26T18:45:59.522Z"
+            },
+            {
+                  "id": "mvpnmaskeigu",
+                  "type": "regular",
+                  "ts": "2026-10-26T19:33:08.516Z"
+            },
+            {
+                  "id": "mvppqja5myy3",
+                  "type": "regular",
+                  "ts": "2026-10-26T20:32:25.373Z"
+            }
+      ],
+      "2026-10-27": [
+            {
+                  "id": "mvpr62x8bn1t",
+                  "type": "regular",
+                  "ts": "2026-10-26T21:12:30.284Z"
+            },
+            {
+                  "id": "mvpu4otlm8lk",
+                  "type": "regular",
+                  "ts": "2026-10-26T22:35:24.201Z"
+            },
+            {
+                  "id": "mvpu4qgptuz7",
+                  "type": "regular",
+                  "ts": "2026-10-26T22:35:26.329Z"
+            },
+            {
+                  "id": "mvpvfujfdcy8",
+                  "type": "regular",
+                  "ts": "2026-10-26T23:12:04.443Z"
+            },
+            {
+                  "id": "mvpw6ag81z43",
+                  "type": "regular",
+                  "ts": "2026-10-26T23:32:38.120Z"
+            },
+            {
+                  "id": "mvq3aqemnoo6",
+                  "type": "regular",
+                  "ts": "2026-10-27T02:52:02.735Z"
+            },
+            {
+                  "id": "mvq4bgatl2x6",
+                  "type": "regular",
+                  "ts": "2026-10-27T03:20:35.909Z"
+            },
+            {
+                  "id": "mvq4h53cjysf",
+                  "type": "regular",
+                  "ts": "2026-10-27T03:25:01.320Z"
+            },
+            {
+                  "id": "mvq6emx0lgva",
+                  "type": "iqos",
+                  "ts": "2026-10-27T04:19:03.684Z"
+            },
+            {
+                  "id": "mvq772b096y6",
+                  "type": "iqos",
+                  "ts": "2026-10-27T04:41:09.996Z"
+            },
+            {
+                  "id": "mvq7fsj7i5it",
+                  "type": "iqos",
+                  "ts": "2026-10-27T04:47:57.235Z"
+            },
+            {
+                  "id": "mvq7nvu51bym",
+                  "type": "iqos",
+                  "ts": "2026-10-27T04:54:14.765Z"
+            },
+            {
+                  "id": "mvq7xqj3yg7c",
+                  "type": "iqos",
+                  "ts": "2026-10-27T05:01:54.447Z"
+            },
+            {
+                  "id": "mvq84gc7oc6m",
+                  "type": "iqos",
+                  "ts": "2026-10-27T05:07:07.831Z"
+            },
+            {
+                  "id": "mvqdj5n3lqg9",
+                  "type": "regular",
+                  "ts": "2026-10-27T07:38:31.887Z"
+            },
+            {
+                  "id": "mvqdy7ilj5h7",
+                  "type": "regular",
+                  "ts": "2026-10-27T07:50:14.157Z"
+            },
+            {
+                  "id": "mvqdy7p89vnd",
+                  "type": "regular",
+                  "ts": "2026-10-27T07:50:14.396Z"
+            },
+            {
+                  "id": "mvqemq1jh7uc",
+                  "type": "regular",
+                  "ts": "2026-10-27T08:09:17.911Z"
+            },
+            {
+                  "id": "mvqg7ctu1pdd",
+                  "type": "regular",
+                  "ts": "2026-10-27T08:53:20.178Z"
+            },
+            {
+                  "id": "mvqgdttu58lg",
+                  "type": "regular",
+                  "ts": "2026-10-27T08:58:22.146Z"
+            },
+            {
+                  "id": "mvqgo5aa3uwo",
+                  "type": "iqos",
+                  "ts": "2026-10-27T09:06:23.554Z"
+            },
+            {
+                  "id": "mvqicjoav5qq",
+                  "type": "regular",
+                  "ts": "2026-10-27T09:53:21.562Z"
+            },
+            {
+                  "id": "mvqkbqyvytws",
+                  "type": "regular",
+                  "ts": "2026-10-27T10:48:43.591Z"
+            },
+            {
+                  "id": "mvqmdg5x1ap1",
+                  "type": "regular",
+                  "ts": "2026-10-27T11:46:02.133Z"
+            },
+            {
+                  "id": "mvqmdgmffrxi",
+                  "type": "iqos",
+                  "ts": "2026-10-27T11:46:02.727Z"
+            },
+            {
+                  "id": "mvqn7kat7lhg",
+                  "type": "regular",
+                  "ts": "2026-10-27T12:09:27.173Z"
+            },
+            {
+                  "id": "mvqp0qmjv5pc",
+                  "type": "regular",
+                  "ts": "2026-10-27T13:00:08.011Z"
+            },
+            {
+                  "id": "mvqr3avphbzv",
+                  "type": "regular",
+                  "ts": "2026-10-27T13:58:06.805Z"
+            },
+            {
+                  "id": "mvqr5wc8yf33",
+                  "type": "regular",
+                  "ts": "2026-10-27T14:00:07.928Z"
+            },
+            {
+                  "id": "mvqrt8t7rpnh",
+                  "type": "regular",
+                  "ts": "2026-10-27T14:18:17.179Z"
+            },
+            {
+                  "id": "mvqrwm6wr7du",
+                  "type": "iqos",
+                  "ts": "2026-10-27T14:20:54.488Z"
+            },
+            {
+                  "id": "mvqtee3wl1wd",
+                  "type": "iqos",
+                  "ts": "2026-10-27T15:02:43.436Z"
+            },
+            {
+                  "id": "mvqu1j9j305b",
+                  "type": "iqos",
+                  "ts": "2026-10-27T15:20:43.208Z"
+            },
+            {
+                  "id": "mvquyph280zj",
+                  "type": "regular",
+                  "ts": "2026-10-27T15:46:30.902Z"
+            },
+            {
+                  "id": "mvqvb7entagg",
+                  "type": "iqos",
+                  "ts": "2026-10-27T15:56:14.015Z"
+            },
+            {
+                  "id": "mvqvnpxakeaq",
+                  "type": "iqos",
+                  "ts": "2026-10-27T16:05:57.886Z"
+            }
       ]
-    };
+};
 
-    let state = {
-      updatedAt: 0,
-      deletedIds: [],
-      days: {} // { 'YYYY-MM-DD': [ { id, type: 'regular'|'iqos', ts: ISOString } ] }
-    };
+    function normalizeIncoming(payload) {
+      if (!payload || typeof payload !== 'object') return {};
+      if (payload.days && typeof payload.days === 'object') return payload;
+      if (payload.d && typeof payload.d === 'object') {
+        const days = {};
+        for (const [dKey, items] of Object.entries(payload.d)) {
+          if (!Array.isArray(items)) continue;
+          days[dKey] = [];
+          for (const row of items) {
+            if (Array.isArray(row) && row.length >= 3) {
+              const [eid, tc, tsSec] = row;
+              const iso = new Date(Number(tsSec) * 1000).toISOString();
+              days[dKey].push({
+                id: String(eid),
+                type: tc === 'q' ? 'iqos' : 'regular',
+                ts: iso
+              });
+            }
+          }
+        }
+        return {
+          updatedAt: payload.u || 0,
+          deletedIds: payload.del || [],
+          days
+        };
+      }
+      return payload;
+    }
 
-    function mergeState(incoming) {
+    function toCompactCloudPayload() {
+      const d = {};
+      const sortedDays = Object.keys(state.days || {}).sort().slice(-14);
+      for (const dKey of sortedDays) {
+        const items = state.days[dKey] || [];
+        if (items.length > 0) {
+          d[dKey] = items.map(it => [
+            it.id,
+            it.type === 'iqos' ? 'q' : 'r',
+            Math.floor(new Date(it.ts).getTime() / 1000)
+          ]);
+        }
+      }
+      return {
+        c: 1,
+        u: state.updatedAt || Date.now(),
+        del: (state.deletedIds || []).slice(-80),
+        d
+      };
+    }
+
+    function mergeState(rawIncoming) {
+      const incoming = normalizeIncoming(rawIncoming);
       if (!incoming || typeof incoming !== 'object') return false;
       const beforeJson = JSON.stringify({ d: state.days, del: state.deletedIds });
       const delSet = new Set([...(state.deletedIds || []), ...(incoming.deletedIds || [])]);
@@ -560,10 +940,10 @@
         } catch (e) {}
       }
 
-      // 2. Pull from Cloud topic
-      for (const topic of [CLOUD_TOPIC, LEGACY_TOPIC]) {
+      // 2. Pull from Cloud mirrors
+      for (const baseUrl of CLOUD_URLS) {
         try {
-          const res = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=48h`, { cache: 'no-store' });
+          const res = await fetch(`${baseUrl}/json?poll=1&since=24h`, { cache: 'no-store' });
           if (res.ok) {
             anySuccess = true;
             const text = await res.text();
@@ -571,10 +951,15 @@
             for (const line of lines) {
               try {
                 const ev = JSON.parse(line);
-                if (ev.event === 'message' && ev.message) {
-                  const payload = JSON.parse(ev.message);
-                  if (mergeState(payload)) changed = true;
+                if (ev.event !== 'message') continue;
+                let payload = null;
+                if (ev.attachment && ev.attachment.url) {
+                  const attRes = await fetch(ev.attachment.url, { cache: 'no-store' });
+                  if (attRes.ok) payload = await attRes.json();
+                } else if (ev.message && ev.message.startsWith('{')) {
+                  payload = JSON.parse(ev.message);
                 }
+                if (payload && mergeState(payload)) changed = true;
               } catch (err) {}
             }
           }
@@ -600,13 +985,16 @@
 
     async function syncWithCloud() {
       let ok = false;
-      try {
-        const res = await fetch(CLOUD_URL, {
-          method: 'POST',
-          body: JSON.stringify(state)
-        });
-        if (res.ok) ok = true;
-      } catch (e) {}
+      const compactBody = JSON.stringify(toCompactCloudPayload());
+      for (const baseUrl of CLOUD_URLS) {
+        try {
+          const res = await fetch(baseUrl, {
+            method: 'POST',
+            body: compactBody
+          });
+          if (res.ok) ok = true;
+        } catch (e) {}
+      }
       for (const localUrl of ['/smoking-sync', LOCAL_API]) {
         try {
           const res2 = await fetch(localUrl, {
@@ -629,20 +1017,30 @@
     }
 
     function connectLiveStream() {
-      try {
-        const es = new EventSource(`${CLOUD_URL}/sse`);
-        es.onmessage = (ev) => {
-          try {
-            const data = JSON.parse(ev.data);
-            const payload = data.message ? JSON.parse(data.message) : data;
-            if (mergeState(payload)) {
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-              render();
-            }
-            setSyncStatus(true);
-          } catch (e) {}
-        };
-      } catch (e) {}
+      for (const baseUrl of CLOUD_URLS) {
+        try {
+          const es = new EventSource(`${baseUrl}/sse`);
+          es.onmessage = async (ev) => {
+            try {
+              const data = JSON.parse(ev.data);
+              let payload = null;
+              if (data.attachment && data.attachment.url) {
+                const attRes = await fetch(data.attachment.url, { cache: 'no-store' });
+                if (attRes.ok) payload = await attRes.json();
+              } else if (data.message && data.message.startsWith('{')) {
+                payload = JSON.parse(data.message);
+              } else if (data.d || data.days) {
+                payload = data;
+              }
+              if (payload && mergeState(payload)) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                render();
+              }
+              setSyncStatus(true);
+            } catch (e) {}
+          };
+        } catch (e) {}
+      }
     }
 
     function setSyncStatus(online) {
