@@ -451,6 +451,7 @@
     ];
     const LOCAL_API = 'http://127.0.0.1:8765/smoking-sync';
 
+    /* SEED_START */
     const SEED_DAYS = {
       "2026-10-25": [
             {
@@ -839,6 +840,13 @@
             }
       ]
 };
+    /* SEED_END */
+
+    let state = {
+      updatedAt: 0,
+      deletedIds: [],
+      days: {}
+    };
 
     function normalizeIncoming(payload) {
       if (!payload || typeof payload !== 'object') return {};
