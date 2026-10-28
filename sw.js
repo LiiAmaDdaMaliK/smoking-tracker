@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smoking-tracker-v7';
+const CACHE_NAME = 'smoking-tracker-v8';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {
@@ -16,11 +16,11 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  if (e.request.url.includes('ntfy.') || e.request.url.includes('8765')) {
+  if (e.request.method !== 'GET' || e.request.url.includes('ntfy.') || e.request.url.includes('8765')) {
     return;
   }
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-cache' })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE_NAME).then((c) => c.put(e.request, copy));
